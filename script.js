@@ -83,14 +83,28 @@ if (royceImage && royceTitle && royceQuote && royceLocation && roycePrev && royc
     renderSlide(currentSlide);
   };
 
-  roycePrev.addEventListener("click", goPrev);
-  royceNext.addEventListener("click", goNext);
+  const bindArrow = (el, handler) => {
+    el.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      handler();
+    });
+    el.addEventListener("touchend", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      handler();
+    }, { passive: false });
+  };
+
+  bindArrow(roycePrev, goPrev);
+  bindArrow(royceNext, goNext);
 
   royceCard.addEventListener("touchstart", (event) => {
     touchStartX = event.changedTouches[0].screenX;
   }, { passive: true });
 
   royceCard.addEventListener("touchend", (event) => {
+    if (event.target.closest(".carousel-arrow") || event.target.closest(".carousel-dot")) return;
     touchEndX = event.changedTouches[0].screenX;
     const delta = touchEndX - touchStartX;
     if (Math.abs(delta) < 40) return;
