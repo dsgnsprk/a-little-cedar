@@ -7,8 +7,10 @@ const royceQuote = document.getElementById("royce-quote");
 const royceLocation = document.getElementById("royce-location");
 const roycePrev = document.getElementById("royce-prev");
 const royceNext = document.getElementById("royce-next");
+const royceDots = document.getElementById("royce-dots");
+const royceCard = document.querySelector(".royce-carousel-card");
 
-if (royceImage && royceTitle && royceQuote && royceLocation && roycePrev && royceNext) {
+if (royceImage && royceTitle && royceQuote && royceLocation && roycePrev && royceNext && royceDots && royceCard) {
   const slides = [
     {
       src: "./assets/img/royce-storefront.jpg",
@@ -34,6 +36,28 @@ if (royceImage && royceTitle && royceQuote && royceLocation && roycePrev && royc
   ];
 
   let currentSlide = 0;
+  let touchStartX = 0;
+  let touchEndX = 0;
+
+  const dots = slides.map((_, index) => {
+    const dot = document.createElement("button");
+    dot.type = "button";
+    dot.className = "carousel-dot";
+    dot.setAttribute("aria-label", `Go to Royce photo ${index + 1}`);
+    dot.addEventListener("click", () => {
+      currentSlide = index;
+      renderSlide(currentSlide);
+    });
+    royceDots.appendChild(dot);
+    return dot;
+  });
+
+  const updateDots = () => {
+    dots.forEach((dot, index) => {
+      dot.classList.toggle("active", index === currentSlide);
+      dot.setAttribute("aria-pressed", index === currentSlide ? "true" : "false");
+    });
+  };
 
   const renderSlide = (index) => {
     const slide = slides[index];
@@ -45,18 +69,36 @@ if (royceImage && royceTitle && royceQuote && royceLocation && roycePrev && royc
       royceQuote.textContent = slide.quote;
       royceLocation.textContent = slide.location;
       royceImage.style.opacity = "1";
+      updateDots();
     }, 120);
   };
 
-  roycePrev.addEventListener("click", () => {
+  const goPrev = () => {
     currentSlide = (currentSlide - 1 + slides.length) % slides.length;
     renderSlide(currentSlide);
-  });
+  };
 
-  royceNext.addEventListener("click", () => {
+  const goNext = () => {
     currentSlide = (currentSlide + 1) % slides.length;
     renderSlide(currentSlide);
-  });
+  };
+
+  roycePrev.addEventListener("click", goPrev);
+  royceNext.addEventListener("click", goNext);
+
+  royceCard.addEventListener("touchstart", (event) => {
+    touchStartX = event.changedTouches[0].screenX;
+  }, { passive: true });
+
+  royceCard.addEventListener("touchend", (event) => {
+    touchEndX = event.changedTouches[0].screenX;
+    const delta = touchEndX - touchStartX;
+    if (Math.abs(delta) < 40) return;
+    if (delta < 0) goNext();
+    if (delta > 0) goPrev();
+  }, { passive: true });
+
+  updateDots();
 }
 
 if (form) {
